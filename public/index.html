@@ -68,7 +68,29 @@ border-radius:8px;
 
 <header>
 BOT HOSTING PANEL
-</header>
+</header><h2>Upload Bot</h2>
+
+<input type="file" id="botzip">
+
+<button onclick="uploadbot()">Upload Bot</button>
+
+<h2>Control Bot</h2>
+
+<button onclick="startbot()">Start</button>
+
+<button onclick="stopbot()">Stop</button>
+
+<h2>Edit File</h2>
+
+<input id="filename" placeholder="index.js">
+
+<br><br>
+
+<textarea id="code" style="width:80%;height:200px"></textarea>
+
+<br>
+
+<button onclick="savefile()">Save File</button>
 
 <div class="container">
 
