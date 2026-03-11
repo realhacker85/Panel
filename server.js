@@ -70,3 +70,22 @@ res.send("Bot uploaded")
 app.listen(process.env.PORT || 3000,()=>{
 console.log("Panel running")
 })
+app.post("/upload",(req,res)=>{
+
+if(!req.files){
+return res.send("No file uploaded")
+}
+
+let file = req.files.file
+
+file.mv("./bot.zip",()=>{
+
+let zip = new AdmZip("./bot.zip")
+
+zip.extractAllTo("./bot",true)
+
+res.send("Bot uploaded and extracted")
+
+})
+
+})
