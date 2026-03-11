@@ -1,64 +1,146 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-<title>Private Bot Hosting Panel</title>
+<title>Bot Hosting Panel</title>
+
 <style>
-body{font-family:Arial;background:#0f0f0f;color:white;text-align:center}
-input,button{padding:10px;margin:5px}
-.bot{background:#1e1e1e;margin:10px;padding:10px;border-radius:8px}
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+margin:0;
+}
+
+header{
+background:#020617;
+padding:20px;
+text-align:center;
+font-size:22px;
+font-weight:bold;
+}
+
+.container{
+padding:30px;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+button{
+padding:10px 20px;
+border:none;
+border-radius:6px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+margin:5px;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+input{
+padding:10px;
+border-radius:6px;
+border:none;
+margin:5px;
+}
+
+pre{
+background:black;
+color:#00ff9c;
+padding:15px;
+height:200px;
+overflow:auto;
+border-radius:8px;
+}
+
 </style>
 </head>
+
 <body>
 
-<h1>PRIVATE BOT HOSTING PANEL</h1>
+<header>
+BOT HOSTING PANEL
+</header>
 
-<input id="botname" placeholder="Bot Name">
-<button onclick="addbot()">Add Bot</button>
+<div class="container">
 
-<h2>Your Bots</h2>
-<div id="bots"></div>
+<div class="card">
+<h3>Upload Bot</h3>
+
+<input type="file" id="file">
+
+<button onclick="upload()">
+Upload Bot
+</button>
+
+</div>
+
+<div class="card">
+<h3>Bot Control</h3>
+
+<button onclick="start()">
+Start Bot
+</button>
+
+<button onclick="stop()">
+Stop Bot
+</button>
+
+</div>
+
+<div class="card">
+<h3>Console</h3>
+
+<pre id="console"></pre>
+
+</div>
+
+</div>
 
 <script>
 
-async function loadBots(){
-let res = await fetch("/bots")
-let data = await res.json()
-
-let html=""
-data.forEach(b=>{
-html += `<div class="bot">
-<b>${b.name}</b>
-<button onclick="deletebot('${b.name}')">Delete</button>
-</div>`
-})
-
-document.getElementById("bots").innerHTML = html
+function start(){
+fetch("/start",{method:"POST"})
 }
 
-async function addbot(){
-let name = document.getElementById("botname").value
+function stop(){
+fetch("/stop",{method:"POST"})
+}
 
-await fetch("/addbot",{
+function upload(){
+
+let file=document.getElementById("file").files[0]
+
+let data=new FormData()
+
+data.append("file",file)
+
+fetch("/upload",{
 method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({name})
+body:data
 })
 
-loadBots()
 }
 
-async function deletebot(name){
-await fetch("/deletebot",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({name})
-})
+async function logs(){
 
-loadBots()
+let res=await fetch("/logs")
+
+let data=await res.json()
+
+document.getElementById("console").innerText=data.join("")
+
 }
 
-loadBots()
+setInterval(logs,2000)
 
 </script>
 
