@@ -1,11 +1,13 @@
-const fs = require("fs")
+const fileUpload = require("express-fileupload")
+const AdmZip = require("adm-zip")
+const { spawn } = require("child_process")const fs = require("fs")
 const AdmZip = require("adm-zip")
 const express = require("express")
 const fileUpload = require("express-fileupload")
 const { spawn } = require("child_process")
 
 const app = express()
-
+app.use(fileUpload())
 app.use(express.json())
 app.use(express.static("public"))
 app.use(fileUpload())
@@ -85,7 +87,59 @@ let zip = new AdmZip("./bot.zip")
 zip.extractAllTo("./bot",true)
 
 res.send("Bot uploaded and extracted")
+let botProcess = null
+
+app.post("/startbot",(req,res)=>{
+
+if(botProcess) return res.send("Bot already running")
+
+botProcess = spawn("node",["index.js"],{
+cwd:"./bot"
+})
+
+botProcess.stdout.on("data",(data)=>{
+console.log(data.toString())
+})
+
+res.send("Bot started")
 
 })
+
+app.post("/stopbot",(req,res)=>{
+
+if(!botProcess) return res.send("Bot not running")
+
+botProcess.kill()
+
+botProcess=null
+
+res.send("Bot stopped")
+
+})
+})
+
+})app.post("/uploadbot",(req,res)=>{
+
+if(!req.files) return res.send("No file")
+
+let file = req.files.file
+
+file.mv("./bot.zip",()=>{
+
+let zip = new AdmZip("./bot.zip")
+
+zip.extractAllTo("./bot",true)
+
+res.send("Bot uploaded")
+
+})
+
+})app.post("/editfile",(req,res)=>{
+
+let {file,content} = req.body
+
+fs.writeFileSync("./bot/"+file,content)
+
+res.send("File saved")
 
 })
