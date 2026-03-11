@@ -167,4 +167,63 @@ setInterval(logs,2000)
 </script>
 
 </body>
-</html>
+</html><script>
+
+async function uploadbot(){
+
+let file=document.getElementById("botzip").files[0]
+
+let data=new FormData()
+
+data.append("file",file)
+
+await fetch("/uploadbot",{
+method:"POST",
+body:data
+})
+
+alert("Bot uploaded")
+
+}
+
+async function startbot(){
+
+await fetch("/startbot",{method:"POST"})
+
+alert("Bot started")
+
+}
+
+async function stopbot(){
+
+await fetch("/stopbot",{method:"POST"})
+
+alert("Bot stopped")
+
+}
+
+async function savefile(){
+
+await fetch("/editfile",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+file:document.getElementById("filename").value,
+
+content:document.getElementById("code").value
+
+})
+
+})
+
+alert("File saved")
+
+}
+
+</script>
