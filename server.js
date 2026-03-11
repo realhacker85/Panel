@@ -1,44 +1,70 @@
+const express = require("express")
+const fileUpload = require("express-fileupload")
+const { spawn } = require("child_process")
 
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
+const app = express()
 
-const app = express();
-app.use(express.json());
-app.use(express.static("public"));
+app.use(express.json())
+app.use(express.static("public"))
+app.use(fileUpload())
 
-const DB_FILE = "database.json";
+let botProcess = null
+let logs = []
 
-function readDB(){
-  if(!fs.existsSync(DB_FILE)) return [];
-  return JSON.parse(fs.readFileSync(DB_FILE));
+// START BOT
+app.post("/start",(req,res)=>{
+
+if(botProcess){
+return res.send("Bot already running")
 }
 
-function writeDB(data){
-  fs.writeFileSync(DB_FILE, JSON.stringify(data,null,2));
+botProcess = spawn("node",["bot.js"])
+
+botProcess.stdout.on("data",(data)=>{
+logs.push(data.toString())
+})
+
+botProcess.on("close",()=>{
+botProcess = null
+})
+
+res.send("Bot started")
+
+})
+
+// STOP BOT
+app.post("/stop",(req,res)=>{
+
+if(!botProcess){
+return res.send("Bot not running")
 }
 
-app.get("/bots",(req,res)=>{
-  res.json(readDB());
-});
+botProcess.kill()
+botProcess = null
 
-app.post("/addbot",(req,res)=>{
-  const {name} = req.body;
-  if(!name) return res.status(400).send("Bot name required");
-  const bots = readDB();
-  bots.push({name, status:"stopped"});
-  writeDB(bots);
-  res.send("Bot added");
-});
+res.send("Bot stopped")
 
-app.post("/deletebot",(req,res)=>{
-  const {name} = req.body;
-  let bots = readDB().filter(b=>b.name!==name);
-  writeDB(bots);
-  res.send("Bot deleted");
-});
+})
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, ()=>{
-  console.log("Panel running on port " + PORT);
-});
+// GET CONSOLE
+app.get("/logs",(req,res)=>{
+res.json(logs)
+})
+
+// UPLOAD FILE
+app.post("/upload",(req,res)=>{
+
+if(!req.files){
+return res.send("No file uploaded")
+}
+
+let file = req.files.file
+file.mv("./bot.js")
+
+res.send("Bot uploaded")
+
+})
+
+app.listen(process.env.PORT || 3000,()=>{
+console.log("Panel running")
+})
